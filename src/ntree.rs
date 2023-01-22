@@ -7,8 +7,7 @@ use std::fmt::Display;
 
 use crate::ntree_node::*;
 
-mod test
-{
+mod test {
     #[allow(unused_imports)]
     use super::*;
     #[allow(unused_imports)]
@@ -21,8 +20,7 @@ mod test
     }
 
     #[test]
-    fn make_ntree()
-    {
+    fn make_ntree() {
         let def_data = NtreeData {
             tile_type: 0,
             depth: 8,
@@ -30,31 +28,27 @@ mod test
         Ntree::<8, _>::new(def_data);
     }
 
-
     #[test]
-    fn empty_ntree()
-    {
+    fn empty_ntree() {
         let def_data = NtreeData {
             tile_type: 0,
             depth: 8,
         };
         Ntree::<0, _>::new(def_data);
     }
-    
 
     #[test]
-    fn insert_ntree()
-    {
+    fn insert_ntree() {
         let def_data = NtreeData {
             tile_type: 0,
-            depth: 0
+            depth: 0,
         };
 
         let mut ntree = Ntree::<8, _>::new(def_data);
 
-        ntree.interface()
-            .insert(4, def_data);
-        ntree.interface()
+        ntree.interface().insert(4, def_data);
+        ntree
+            .interface()
             .insert_mut(6, def_data)
             .insert(3, def_data);
 
@@ -67,28 +61,29 @@ mod test
                     None,
                     None,
                     Some(Box::from(NtreeNode {
-                        data: def_data, 
-                        children: none_array!(8, Box<NtreeNode<8, NtreeData>>)
+                        data: def_data,
+                        children: none_array!(8, Box<NtreeNode<8, NtreeData>>),
                     })),
                     None,
                     Some(Box::from(NtreeNode {
-                        data: def_data, children: [
+                        data: def_data,
+                        children: [
                             None,
                             None,
                             None,
                             Some(Box::from(NtreeNode {
-                                data: def_data, 
-                                children: none_array!(8, Box<NtreeNode<8, NtreeData>>)
+                                data: def_data,
+                                children: none_array!(8, Box<NtreeNode<8, NtreeData>>),
                             })),
                             None,
                             None,
                             None,
                             None,
-                        ]
+                        ],
                     })),
                     None,
                 ],
-            }
+            },
         };
 
         #[cfg(not(feature = "debug"))]
@@ -100,8 +95,7 @@ mod test
     /// Run with cargo test -- --nocapture
     #[cfg(feature = "display")]
     #[test]
-    fn display_ntree()
-    {
+    fn display_ntree() {
         #[derive(Clone, Copy, PartialEq, Eq)]
         struct NtreeDataNoDebug {
             pub tile_type: i32,
@@ -110,40 +104,39 @@ mod test
 
         let def_data = NtreeDataNoDebug {
             tile_type: 0,
-            depth: 0
+            depth: 0,
         };
 
         let mut ntree = Ntree::<8, _>::new(def_data);
 
-        ntree.interface()
-            .insert(4, def_data);
-        ntree.interface()
+        ntree.interface().insert(4, def_data);
+        ntree
+            .interface()
             .insert_mut(6, def_data)
             .insert(3, def_data);
-        
+
         println!("Display output:");
         println!("{:}", ntree);
         println!("");
-    } 
+    }
 
     /// Run with cargo test -- --nocapture
     #[cfg(feature = "debug")]
     #[test]
-    fn debug_ntree()
-    {
+    fn debug_ntree() {
         let def_data = NtreeData {
             tile_type: 0,
-            depth: 0
+            depth: 0,
         };
 
         let mut ntree = Ntree::<8, _>::new(def_data);
 
-        ntree.interface()
-            .insert(4, def_data);
-        ntree.interface()
+        ntree.interface().insert(4, def_data);
+        ntree
+            .interface()
             .insert_mut(6, def_data)
             .insert(3, def_data);
-        
+
         println!("Debug output:");
         println!("{:?}", ntree);
         println!("");
@@ -165,8 +158,7 @@ impl<const N: usize, T: Sized> Ntree<N, T> {
         Self { root }
     }
 
-    pub fn interface(&mut self) -> &mut dyn NtreeNodeInterface<T>
-    {
+    pub fn interface(&mut self) -> &mut dyn NtreeNodeInterface<T> {
         &mut self.root
     }
 }
