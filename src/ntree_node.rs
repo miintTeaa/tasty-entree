@@ -1,6 +1,6 @@
-use std::{fmt::Debug, mem::MaybeUninit};
+use std::fmt::Debug;
 
-use crate::macros::new_array;
+use super::macros::none_array;
 
 type NodeChildren<const N: usize, T> = [Option<Box<NtreeNode<N, T>>>;N];
 
@@ -25,7 +25,7 @@ impl<const N: usize, T: Sized + Debug> NtreeNode<N, T>{
 
     pub fn new(data: T) -> Self
     {
-        let children = new_array!(N, Option<Box<NtreeNode<N, T>>>, None);
+        let children = none_array!(N, Box<NtreeNode<N, T>>);
 
         Self {
             data,

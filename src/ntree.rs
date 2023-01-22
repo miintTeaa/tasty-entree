@@ -6,10 +6,9 @@ use crate::ntree_node::*;
 
 mod test
 {
-    #[allow(unused_imports)]
     use super::*;
     #[allow(unused_imports)]
-    use crate::macros::new_array;
+    use crate::macros::none_array;
 
     #[derive(Clone, Copy, Debug, PartialEq, Eq)]
     struct NtreeData {
@@ -48,7 +47,7 @@ mod test
         };
 
         let mut ntree = Ntree::<8, _>::new(def_data);
-        
+
         ntree.interface()
             .insert(4, def_data);
         ntree.interface()
@@ -65,7 +64,7 @@ mod test
                     None,
                     Some(Box::from(NtreeNode {
                         data: def_data, 
-                        children: new_array!(8, Option<Box<NtreeNode<8, NtreeData>>>, None)
+                        children: none_array!(8, Box<NtreeNode<8, NtreeData>>)
                     })),
                     None,
                     Some(Box::from(NtreeNode {
@@ -75,7 +74,7 @@ mod test
                             None,
                             Some(Box::from(NtreeNode {
                                 data: def_data, 
-                                children: new_array!(8, Option<Box<NtreeNode<8, NtreeData>>>, None)
+                                children: none_array!(8, Box<NtreeNode<8, NtreeData>>)
                             })),
                             None,
                             None,

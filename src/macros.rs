@@ -1,19 +1,21 @@
-macro_rules! new_array {
-    ( $size:expr, $typ:ty, $default:expr ) => {
+macro_rules! none_array {
+    ( $size:expr, $typ:ty ) => {
         unsafe {
-            let mut ret: [$typ; $size] = std::mem::MaybeUninit::uninit().assume_init();
+            let mut ret_maybe = std::mem::MaybeUninit::<[_; $size]>::uninit();
+
+            let ret = ret_maybe.as_mut_ptr();
 
             if $size != 0 {
-                let ret_first: *mut $typ = ret.get_mut(0).unwrap();
+                let ret_first: *mut Option<$typ> = (*ret).get_mut(0).unwrap();
 
                 for i in 0..$size {
-                    std::ptr::write(ret_first.add(i), $default)
+                    std::ptr::write(ret_first.add(i), None)
                 }
             }
 
-            ret
+            ret_maybe.assume_init()
         }
     };
 }
 
-pub(crate) use new_array;
+pub(super) use none_array;
