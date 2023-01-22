@@ -38,7 +38,7 @@ mod test {
     }
 
     #[test]
-    fn insert_ntree() {
+    fn push_ntree() {
         let def_data = NtreeData {
             tile_type: 0,
             depth: 0,
@@ -46,11 +46,12 @@ mod test {
 
         let mut ntree = Ntree::<8, _>::new(def_data);
 
-        ntree.interface_mut().insert(4, def_data);
+        ntree.interface_mut().bounded_push(4, def_data);
         ntree
             .interface_mut()
-            .insert_mut(6, def_data)
-            .insert(3, def_data);
+            .bounded_push_mut(6, def_data)
+            .expect("Array bounding not working properly")
+            .bounded_push(3, def_data);
 
         let correct_ntree = Ntree {
             root: NtreeNode {
@@ -108,10 +109,15 @@ mod test {
 
         ntree
             .interface_mut()
-            .insert_mut(3, data1)
-            .insert_mut(5, data2);
+            .bounded_push_mut(3, data1)
+            .expect("Array bounding not working properly")
+            .bounded_push_mut(5, data2);
 
-        let out = ntree.interface_mut().peek_mut(3).unwrap().pop(5);
+        let out = ntree
+            .interface_mut()
+            .bounded_peek_mut(3)
+            .expect("Array bounding not working properly")
+            .bounded_pop(5);
 
         assert_eq!(out, Some(data2));
     }
@@ -146,7 +152,7 @@ mod test {
         let mut tree = Ntree::<4, i32>::new(3);
 
         let thread = thread::spawn(move || {
-            tree.interface_mut().insert(0, 5);
+            tree.interface_mut().bounded_push(0, 5);
         });
 
         thread.join().unwrap();
@@ -191,11 +197,12 @@ mod test {
 
         let mut ntree = Ntree::<8, _>::new(def_data);
 
-        ntree.interface_mut().insert(4, def_data);
+        ntree.interface_mut().bounded_push(4, def_data);
         ntree
             .interface_mut()
-            .insert_mut(6, def_data)
-            .insert(3, def_data);
+            .bounded_push_mut(6, def_data)
+            .expect("Array bounding not working properly")
+            .bounded_push(3, def_data);
 
         println!("Display output:");
         println!("{:}", ntree);
@@ -213,11 +220,12 @@ mod test {
 
         let mut ntree = Ntree::<8, _>::new(def_data);
 
-        ntree.interface_mut().insert(4, def_data);
+        ntree.interface_mut().bounded_push(4, def_data);
         ntree
             .interface_mut()
-            .insert_mut(6, def_data)
-            .insert(3, def_data);
+            .bounded_push_mut(6, def_data)
+            .expect("Array bounding not working properly")
+            .bounded_push(3, def_data);
 
         println!("Debug output:");
         println!("{:?}", ntree);
@@ -262,12 +270,12 @@ impl<const N: usize, T: Sized> Ntree<N, T> {
     }
 
     /// Returns an **immutable** reference to an [interface][NtreeNodeInterface] to the root node.
-    pub fn interface(&self) -> &dyn NtreeNodeInterface<T> {
+    pub fn interface(&self) -> &dyn NtreeNodeInterface<N, T> {
         &self.root
     }
 
     /// Returns a **mutable** reference to an [interface][NtreeNodeInterface] to the root node.
-    pub fn interface_mut(&mut self) -> &mut dyn NtreeNodeInterface<T> {
+    pub fn interface_mut(&mut self) -> &mut dyn NtreeNodeInterface<N, T> {
         &mut self.root
     }
 }

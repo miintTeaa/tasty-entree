@@ -23,15 +23,16 @@ type NodeChildren<const N: usize, T> = [Option<Box<NtreeNode<N, T>>>; N];
 /// assert_eq!(root_data, &"Root node".to_string());
 ///
 /// let oct_interface = i32_octree.interface_mut();
-/// //oct_interface.insert_mut(0, "This is node 0".to_string());
-/// //oct_interface.insert_mut(3, "And this is node 3".to_string());
-/// let node_2 = oct_interface.insert_mut(2, "Hello from node 2".to_string());
+/// //oct_interface.peek_or_push_mut(0, "This is node 0".to_string());
+/// //oct_interface.peek_or_push_mut(3, "And this is node 3".to_string());
+/// let node_2 = oct_interface.bounded_push_mut(2, "Hello from node 2".to_string()).expect("Array bounding error");
 ///
 /// node_2
-///     .insert_mut(1, "And 2.1".to_string())
-///     .insert_mut(3, "And 2.1.3".to_string());
+///     .bounded_push_mut(1, "And 2.1".to_string())
+///     .expect("Array bounding error")
+///     .bounded_push_mut(3, "And 2.1.3".to_string());
 ///
-/// node_2.insert_mut(2, "And 2.2!".to_string());
+/// node_2.bounded_push_mut(2, "And 2.2!".to_string());
 ///
 /// #[cfg(feature = "debug")]
 /// println!("Tree:\n{:?}", i32_octree);
@@ -46,7 +47,7 @@ type NodeChildren<const N: usize, T> = [Option<Box<NtreeNode<N, T>>>; N];
 /// // | | 2 NtreeNode ( "And 2.2!" )
 /// // | 3 NtreeNode ( "And this is node 3" )
 /// ```
-pub trait NtreeNodeInterface<T: Sized> {
+pub trait NtreeNodeInterface<const N: usize, T: Sized> {
     /// Returns a reference to the data in this node.
     fn get_data(&self) -> &T;
     /// Returns a mutable reference to the data in this node.
@@ -54,19 +55,139 @@ pub trait NtreeNodeInterface<T: Sized> {
     /// Sets data inside this node to new value and returns old value.
     fn set_data(&mut self, data: T) -> T;
     /// Returns a mutable reference to an interface to child node `i` if it exists.
-    fn peek_mut(&mut self, i: usize) -> Option<&mut dyn NtreeNodeInterface<T>>;
+    ///
+    /// Panics if i is bigger than the ammount of children the node has.
+    unsafe fn peek_mut(&mut self, i: usize) -> Option<&mut dyn NtreeNodeInterface<N, T>>;
+    /// Returns a mutable reference to an interface to child node `i` if it exists.
+    ///
+    /// Does bounds checking at runtime.
+    fn bounded_peek_mut(&mut self, i: usize) -> Option<&mut dyn NtreeNodeInterface<N, T>> {
+        if i > N {
+            return None;
+        }
+        unsafe { self.peek_mut(i) }
+    }
     /// Returns a reference to an interface to child node `i` if it exists.
-    fn peek(&self, i: usize) -> Option<&dyn NtreeNodeInterface<T>>;
+    ///
+    /// Panics if i is bigger than the ammount of children the node has.
+    unsafe fn peek(&self, i: usize) -> Option<&dyn NtreeNodeInterface<N, T>>;
+    /// Returns a reference to an interface to child node `i` if it exists.
+    ///
+    /// Does bounds checking at runtime.
+    fn bounded_peek(&mut self, i: usize) -> Option<&dyn NtreeNodeInterface<N, T>> {
+        if i > N {
+            return None;
+        }
+        unsafe { self.peek(i) }
+    }
+    /// If child node 'i' exists, overwrites it.
+    ///
+    /// If it doesn't, creates it and returns a mutable reference to it.
+    ///
+    /// If you only want to create a child if one doesn't already exist,
+    /// use [peek_or_push] or [peek_or_push_mut].
+    ///
+    /// Panics if i is bigger than the ammount of children the node has.
+    unsafe fn push_mut(&mut self, i: usize, data: T) -> &mut dyn NtreeNodeInterface<N, T>;
+    /// If child node 'i' exists, overwrites it.
+    ///
+    /// If it doesn't, creates it and returns a mutable reference to it (as long as `i` is within bounds).
+    ///
+    /// Does bounds checking at runtime. If `i` is out of bounds, returns `None`.
+    fn bounded_push_mut(&mut self, i: usize, data: T) -> Option<&mut dyn NtreeNodeInterface<N, T>> {
+        if i > N {
+            return None;
+        }
+        unsafe { Some(self.push_mut(i, data)) }
+    }
+    /// If child node 'i' exists, overwrites it.
+    ///
+    /// If it doesn't, creates it and returns a reference to it.
+    ///
+    /// If you only want to create a child if one doesn't already exist,
+    /// use [peek_or_push] or [peek_or_push_mut].
+    ///
+    /// Panics if i is bigger than the ammount of children the node has.
+    unsafe fn push(&mut self, i: usize, data: T) -> &dyn NtreeNodeInterface<N, T> {
+        self.push_mut(i, data)
+    }
+    /// If child node 'i' exists, overwrites it.
+    ///
+    /// If it doesn't, creates it and returns a reference to it  (as long as `i` is within bounds).
+    ///
+    /// Does bounds checking at runtime. If `i` is out of bounds, returns `None`.
+    fn bounded_push(&mut self, i: usize, data: T) -> Option<&dyn NtreeNodeInterface<N, T>> {
+        if i > N {
+            return None;
+        }
+        unsafe { Some(self.push(i, data)) }
+    }
     /// Returns a reference to an interface to child node `i` if it exists,
     /// if not, creates it and returns it.
-    fn insert(&mut self, i: usize, default_data: T) -> &dyn NtreeNodeInterface<T>;
+    ///
+    /// Panics if i is bigger than the ammount of children the node has.
+    unsafe fn peek_or_push(&mut self, i: usize, default_data: T) -> &dyn NtreeNodeInterface<N, T> {
+        self.peek_or_push_mut(i, default_data)
+    }
+    /// Returns a reference to an interface to child node `i` if it exists,
+    /// if not, creates it and returns it (as long as `i` is within bounds).
+    ///
+    /// Does bounds checking at runtime. If `i` is out of bounds, returns `None`.
+    fn bounded_peek_or_push(
+        &mut self,
+        i: usize,
+        default_data: T,
+    ) -> Option<&dyn NtreeNodeInterface<N, T>> {
+        if i > N {
+            return None;
+        }
+        unsafe { Some(self.peek_or_push(i, default_data)) }
+    }
     /// Returns a mutable reference to an interface to child node `i` if it exists,
     /// if not, creates it and returns it.
-    fn insert_mut(&mut self, i: usize, default_data: T) -> &mut dyn NtreeNodeInterface<T>;
+    ///
+    /// Panics if i is bigger than the ammount of children the node has.
+    unsafe fn peek_or_push_mut(
+        &mut self,
+        i: usize,
+        default_data: T,
+    ) -> &mut dyn NtreeNodeInterface<N, T> {
+        if self.peek(i).is_none() {
+            self.push_mut(i, default_data);
+        }
+        self.peek_mut(i).unwrap()
+    }
+    /// Returns a mutable reference to an interface to child node `i` if it exists,
+    /// if not, creates it and returns it (as long as `i` is within bounds).
+    ///
+    /// Does bounds checking at runtime.
+    fn bounded_peek_or_push_mut(
+        &mut self,
+        i: usize,
+        default_data: T,
+    ) -> Option<&mut dyn NtreeNodeInterface<N, T>> {
+        if i > N {
+            return None;
+        }
+        unsafe { Some(self.peek_or_push_mut(i, default_data)) }
+    }
     /// Pops child node 'i' and returns an optional value representing inner data.
     ///
     /// Returns `Some(data)` if it existed, `None` if it didn't.
-    fn pop(&mut self, i: usize) -> Option<T>;
+    ///
+    /// Panics if i is bigger than the ammount of children the node has.
+    unsafe fn pop(&mut self, i: usize) -> Option<T>;
+    /// Pops child node 'i' and returns an optional value representing inner data.
+    ///
+    /// Returns `Some(data)` if it existed, `None` if it didn't.
+    ///
+    /// Does bounds checking at runtime.
+    fn bounded_pop(&mut self, i: usize) -> Option<T> {
+        if i > N {
+            return None;
+        }
+        unsafe { self.pop(i) }
+    }
 }
 
 #[derive(PartialEq, Eq)]
@@ -93,7 +214,7 @@ impl<const N: usize, T: Sized> NtreeNode<N, T> {
 
 ////////////////////////// Trait impl //////////////////////////
 
-impl<const N: usize, T: Sized> NtreeNodeInterface<T> for NtreeNode<N, T> {
+impl<const N: usize, T: Sized> NtreeNodeInterface<N, T> for NtreeNode<N, T> {
     fn get_data(&self) -> &T {
         &self.data
     }
@@ -106,7 +227,7 @@ impl<const N: usize, T: Sized> NtreeNodeInterface<T> for NtreeNode<N, T> {
         std::mem::replace(&mut self.data, data)
     }
 
-    fn peek_mut(&mut self, i: usize) -> Option<&mut dyn NtreeNodeInterface<T>> {
+    unsafe fn peek_mut(&mut self, i: usize) -> Option<&mut dyn NtreeNodeInterface<N, T>> {
         let node_opt = &mut self.children[i];
         match node_opt {
             Some(node) => Some(node.as_mut()),
@@ -114,14 +235,7 @@ impl<const N: usize, T: Sized> NtreeNodeInterface<T> for NtreeNode<N, T> {
         }
     }
 
-    fn insert_mut(&mut self, i: usize, default_data: T) -> &mut dyn NtreeNodeInterface<T> {
-        if self.children[i].is_none() {
-            self.new_node(i, default_data);
-        }
-        self.peek_mut(i).unwrap()
-    }
-
-    fn peek(&self, i: usize) -> Option<&dyn NtreeNodeInterface<T>> {
+    unsafe fn peek(&self, i: usize) -> Option<&dyn NtreeNodeInterface<N, T>> {
         let node_opt = &self.children[i];
         match node_opt {
             Some(node) => Some(node.as_ref()),
@@ -129,18 +243,16 @@ impl<const N: usize, T: Sized> NtreeNodeInterface<T> for NtreeNode<N, T> {
         }
     }
 
-    fn insert(&mut self, i: usize, default_data: T) -> &dyn NtreeNodeInterface<T> {
-        if self.children[i].is_none() {
-            self.new_node(i, default_data);
-        }
-        self.peek(i).unwrap()
-    }
-
-    fn pop(&mut self, i: usize) -> Option<T> {
+    unsafe fn pop(&mut self, i: usize) -> Option<T> {
         match self.children[i].take() {
             Some(node) => Some(node.take_data()),
             None => None,
         }
+    }
+
+    unsafe fn push_mut(&mut self, i: usize, data: T) -> &mut dyn NtreeNodeInterface<N, T> {
+        self.children[i] = Some(Box::from(Self::new(data)));
+        self.peek_mut(i).unwrap()
     }
 }
 
