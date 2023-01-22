@@ -93,6 +93,53 @@ mod test {
     }
 
     #[test]
+    fn pop_ntree() {
+        let data1 = NtreeData {
+            tile_type: 4,
+            depth: 8,
+        };
+
+        let data2 = NtreeData {
+            tile_type: -3,
+            depth: 5,
+        };
+
+        let mut ntree = Ntree::<8, _>::new(data1);
+
+        ntree
+            .interface_mut()
+            .insert_mut(3, data1)
+            .insert_mut(5, data2);
+
+        let out = ntree.interface_mut().peek_mut(3).unwrap().pop(5);
+
+        assert_eq!(out, Some(data2));
+    }
+
+    #[test]
+    fn set_data_ntree() {
+        let def_data = NtreeData {
+            tile_type: -5,
+            depth: 8,
+        };
+
+        let replaced_data = NtreeData {
+            tile_type: 1,
+            depth: 2,
+        };
+
+        let mut ntree = Ntree::<8, _>::new(def_data);
+
+        let old_data = ntree.interface_mut().set_data(replaced_data);
+
+        assert_eq!(old_data, def_data);
+
+        let new_data = ntree.interface_mut().get_data();
+
+        assert_eq!(new_data, &replaced_data);
+    }
+
+    #[test]
     fn send_test() {
         use std::thread;
 

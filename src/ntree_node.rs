@@ -51,6 +51,8 @@ pub trait NtreeNodeInterface<T: Sized> {
     fn get_data(&self) -> &T;
     /// Returns a mutable reference to the data in this node.
     fn get_data_mut(&mut self) -> &mut T;
+    /// Sets data inside this node to new value and returns old value.
+    fn set_data(&mut self, data: T) -> T;
     /// Returns a mutable reference to an interface to child node `i` if it exists.
     fn peek_mut(&mut self, i: usize) -> Option<&mut dyn NtreeNodeInterface<T>>;
     /// Returns a reference to an interface to child node `i` if it exists.
@@ -61,6 +63,10 @@ pub trait NtreeNodeInterface<T: Sized> {
     /// Returns a mutable reference to an interface to child node `i` if it exists,
     /// if not, creates it and returns it.
     fn insert_mut(&mut self, i: usize, default_data: T) -> &mut dyn NtreeNodeInterface<T>;
+    /// Pops child node 'i' and returns an optional value representing inner data.
+    ///
+    /// Returns `Some(data)` if it existed, `None` if it didn't.
+    fn pop(&mut self, i: usize) -> Option<T>;
 }
 
 #[derive(PartialEq, Eq)]
@@ -79,6 +85,10 @@ impl<const N: usize, T: Sized> NtreeNode<N, T> {
     fn new_node(&mut self, i: usize, data: T) {
         self.children[i] = Some(Box::new(NtreeNode::new(data)));
     }
+
+    fn take_data(self) -> T {
+        self.data
+    }
 }
 
 ////////////////////////// Trait impl //////////////////////////
@@ -90,6 +100,10 @@ impl<const N: usize, T: Sized> NtreeNodeInterface<T> for NtreeNode<N, T> {
 
     fn get_data_mut(&mut self) -> &mut T {
         &mut self.data
+    }
+
+    fn set_data(&mut self, data: T) -> T {
+        std::mem::replace(&mut self.data, data)
     }
 
     fn peek_mut(&mut self, i: usize) -> Option<&mut dyn NtreeNodeInterface<T>> {
@@ -120,6 +134,13 @@ impl<const N: usize, T: Sized> NtreeNodeInterface<T> for NtreeNode<N, T> {
             self.new_node(i, default_data);
         }
         self.peek(i).unwrap()
+    }
+
+    fn pop(&mut self, i: usize) -> Option<T> {
+        match self.children[i].take() {
+            Some(node) => Some(node.take_data()),
+            None => None,
+        }
     }
 }
 
