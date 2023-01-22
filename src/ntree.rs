@@ -162,6 +162,7 @@ impl<const N: usize, T: Sized + Debug> Debug for Ntree<N, T> {
         Debug::fmt(&self.root, f)
     }
 }
+
 impl<const N: usize, T: Sized> Display for Ntree<N, T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str("[Ntree]")?;
