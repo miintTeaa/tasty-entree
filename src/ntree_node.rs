@@ -74,6 +74,13 @@ impl<const N: usize, T: Sized + Debug> NtreeNode<N, T>{
     }
 }
 
+impl<const N: usize, T: Sized + Debug> Debug for NtreeNode<N, T>
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.fmt_indent(0, 0, f)
+    }
+}
+
 impl<const N: usize, T: Sized + Debug> NtreeNodeInterface<T> for NtreeNode<N, T>
 {
     fn get_data(&self) -> &T {
