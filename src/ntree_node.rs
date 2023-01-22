@@ -7,13 +7,60 @@ use super::macros::none_array;
 
 type NodeChildren<const N: usize, T> = [Option<Box<NtreeNode<N, T>>>; N];
 
+/// Safe interface to a specific node in an n-tree.
+///
+/// Usage example:
+/// ```
+/// use tasty_entree::Ntree;
+///
+/// // Making a quadtree where each node holds a String.
+/// let mut i32_octree = Ntree::<4, String>::new("Root node".to_string());
+///
+/// // As it was passed as the default value, the root node
+/// // will hold a 5 as its data.
+/// let root_data = i32_octree.interface().get_data();
+/// println!("Found data: {:}", root_data);
+/// assert_eq!(root_data, &"Root node".to_string());
+///
+/// let oct_interface = i32_octree.interface_mut();
+/// //oct_interface.insert_mut(0, "This is node 0".to_string());
+/// //oct_interface.insert_mut(3, "And this is node 3".to_string());
+/// let node_2 = oct_interface.insert_mut(2, "Hello from node 2".to_string());
+///
+/// node_2
+///     .insert_mut(1, "And 2.1".to_string())
+///     .insert_mut(3, "And 2.1.3".to_string());
+///
+/// node_2.insert_mut(2, "And 2.2!".to_string());
+///
+/// #[cfg(feature = "debug")]
+/// println!("Tree:\n{:?}", i32_octree);
+///
+/// // With the debug features enabled, this would print:
+/// // [NTree]
+/// // 0 NtreeNode ( "Root node" )
+/// // | 0 NTreeNode ( "This is node 0" )
+/// // | 2 NTreeNode ( "Hello from node 2" )
+/// // | | 1 NtreeNode ( "And 2.1" )
+/// // | | | 3 NtreeNode ( "And 2.1.3" )
+/// // | | 2 NtreeNode ( "And 2.2!" )
+/// // | 3 NtreeNode ( "And this is node 3" )
+/// ```
 pub trait NtreeNodeInterface<T: Sized> {
+    /// Returns a reference to the data in this node.
     fn get_data(&self) -> &T;
+    /// Returns a mutable reference to the data in this node.
     fn get_data_mut(&mut self) -> &mut T;
+    /// Returns a mutable reference to an interface to child node `i` if it exists.
     fn peek_mut(&mut self, i: usize) -> Option<&mut dyn NtreeNodeInterface<T>>;
-    fn insert_mut(&mut self, i: usize, default_data: T) -> &mut dyn NtreeNodeInterface<T>;
+    /// Returns a reference to an interface to child node `i` if it exists.
     fn peek(&self, i: usize) -> Option<&dyn NtreeNodeInterface<T>>;
+    /// Returns a reference to an interface to child node `i` if it exists,
+    /// if not, creates it and returns it.
     fn insert(&mut self, i: usize, default_data: T) -> &dyn NtreeNodeInterface<T>;
+    /// Returns a mutable reference to an interface to child node `i` if it exists,
+    /// if not, creates it and returns it.
+    fn insert_mut(&mut self, i: usize, default_data: T) -> &mut dyn NtreeNodeInterface<T>;
 }
 
 #[derive(PartialEq, Eq)]

@@ -1,3 +1,6 @@
+/// Usage: none_array(`size`: `usize`, `type`)
+///
+/// Creates an array of size `size` and type `Option<type>` and fills it with `None`.
 macro_rules! none_array {
     ( $size:expr, $typ:ty ) => {
         unsafe {

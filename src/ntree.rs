@@ -143,13 +143,34 @@ mod test {
     }
 }
 
-/// Safe interface for NtreeNodes
+/// Safe n-tree interface.
+///
+/// You can create one with [Ntree::<size, Type>::new(default_value)][Self::new()],
+///
+/// and you can interact with it using [Self::interface()] and [Self::interface_mut()].
+///
+/// ```
+/// use tasty_entree::Ntree;
+///
+/// // Making an octree where each node holds an i32.
+/// let i32_octree = Ntree::<8, i32>::new(5);
+///
+/// // As it was passed as the default value, the root node
+/// // will hold a 5 as its data.
+/// let root_data = i32_octree.interface().get_data();
+/// println!("Found data: {:}", root_data);
+/// assert_eq!(root_data, &5);
+/// ```
+///
+///
+/// For more info on what you can do with interfaces check [NtreeNodeInterface].
 #[derive(PartialEq, Eq)]
 pub struct Ntree<const N: usize, T: Sized> {
     root: NtreeNode<N, T>,
 }
 
 impl<const N: usize, T: Sized> Ntree<N, T> {
+    /// Creates a new [Ntree], with the root node's data set to `default_data`.
     pub fn new(default_data: T) -> Self {
         let root;
 
@@ -158,10 +179,12 @@ impl<const N: usize, T: Sized> Ntree<N, T> {
         Self { root }
     }
 
+    /// Returns an **immutable** reference to an [interface][NtreeNodeInterface] to the root node.
     pub fn interface(&self) -> &dyn NtreeNodeInterface<T> {
         &self.root
     }
 
+    /// Returns a **mutable** reference to an [interface][NtreeNodeInterface] to the root node.
     pub fn interface_mut(&mut self) -> &mut dyn NtreeNodeInterface<T> {
         &mut self.root
     }
