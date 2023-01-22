@@ -1,11 +1,15 @@
 #![allow(dead_code)]
 
-use std::fmt::{Debug, Display};
+#[cfg(feature = "debug")]
+use std::fmt::Debug;
+#[cfg(feature = "display")]
+use std::fmt::Display;
 
 use crate::ntree_node::*;
 
 mod test
 {
+    #[allow(unused_imports)]
     use super::*;
     #[allow(unused_imports)]
     use crate::macros::none_array;
@@ -87,10 +91,14 @@ mod test
             }
         };
 
+        #[cfg(not(feature = "debug"))]
+        assert!(ntree == correct_ntree, "Trees are not equal");
+        #[cfg(feature = "debug")]
         assert_eq!(ntree, correct_ntree);
     }
 
     /// Run with cargo test -- --nocapture
+    #[cfg(feature = "display")]
     #[test]
     fn display_ntree()
     {
@@ -113,11 +121,13 @@ mod test
             .insert_mut(6, def_data)
             .insert(3, def_data);
         
+        println!("Display output:");
         println!("{:}", ntree);
-    }
-    
+        println!("");
+    } 
 
     /// Run with cargo test -- --nocapture
+    #[cfg(feature = "debug")]
     #[test]
     fn debug_ntree()
     {
@@ -134,7 +144,9 @@ mod test
             .insert_mut(6, def_data)
             .insert(3, def_data);
         
+        println!("Debug output:");
         println!("{:?}", ntree);
+        println!("");
     }
 }
 
@@ -159,6 +171,7 @@ impl<const N: usize, T: Sized> Ntree<N, T> {
     }
 }
 
+#[cfg(feature = "debug")]
 impl<const N: usize, T: Sized + Debug> Debug for Ntree<N, T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str("[Ntree]")?;
@@ -166,6 +179,7 @@ impl<const N: usize, T: Sized + Debug> Debug for Ntree<N, T> {
     }
 }
 
+#[cfg(feature = "display")]
 impl<const N: usize, T: Sized> Display for Ntree<N, T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str("[Ntree]")?;

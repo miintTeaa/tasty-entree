@@ -1,4 +1,8 @@
-use std::fmt::{Debug, Display};
+#[cfg(feature = "debug")]
+use std::fmt::Debug;
+#[cfg(feature = "display")]
+use std::fmt::Display;
+
 
 use super::macros::none_array;
 
@@ -86,6 +90,7 @@ impl<const N: usize, T: Sized> NtreeNodeInterface<T> for NtreeNode<N, T>
 
 //////////////////////////// Debug /////////////////////////////
 
+#[cfg(feature = "debug")]
 impl<const N: usize, T: Sized + Debug> NtreeNode<N, T>
 {
     pub fn dbg_indent(&self, index: usize, indentation: u32, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -102,6 +107,7 @@ impl<const N: usize, T: Sized + Debug> NtreeNode<N, T>
     }
 }
 
+#[cfg(feature = "debug")]
 impl<const N: usize, T: Sized + Debug> Debug for NtreeNode<N, T>
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -111,6 +117,7 @@ impl<const N: usize, T: Sized + Debug> Debug for NtreeNode<N, T>
 
 /////////////////////////// Display ////////////////////////////
 
+#[cfg(feature = "display")]
 impl<const N: usize, T: Sized> NtreeNode<N, T> {
     pub fn fmt_indent(&self, index: usize, indentation: u32, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str("\n")?;
@@ -127,6 +134,7 @@ impl<const N: usize, T: Sized> NtreeNode<N, T> {
 }
 
 
+#[cfg(feature = "display")]
 impl<const N: usize, T: Sized> Display for NtreeNode<N, T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.fmt_indent(0, 0, f)
