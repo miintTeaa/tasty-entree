@@ -1,10 +1,10 @@
-use std::fmt::Debug;
+use std::fmt::{Debug, Display};
 
 use super::macros::none_array;
 
 type NodeChildren<const N: usize, T> = [Option<Box<NtreeNode<N, T>>>;N];
 
-pub trait NtreeNodeInterface<T: Sized + Debug>
+pub trait NtreeNodeInterface<T: Sized>
 {
     fn get_data(&self) -> &T;
     fn get_data_mut(&mut self) -> &mut T;
@@ -16,12 +16,12 @@ pub trait NtreeNodeInterface<T: Sized + Debug>
 
 
 #[derive(PartialEq, Eq)]
-pub struct NtreeNode<const N: usize, T: Sized + Debug> {
+pub struct NtreeNode<const N: usize, T: Sized> {
     pub data: T,
     pub children: NodeChildren<N, T>,
 }
 
-impl<const N: usize, T: Sized + Debug> NtreeNode<N, T>{
+impl<const N: usize, T: Sized> NtreeNode<N, T>{
 
     pub fn new(data: T) -> Self
     {
@@ -31,57 +31,17 @@ impl<const N: usize, T: Sized + Debug> NtreeNode<N, T>{
             data,
             children
         }
-        // unsafe {
-        //     let mut children: NodeChildren<N, T> = MaybeUninit::uninit().assume_init();
-
-        //     if N == 0 {
-        //         return Self {
-        //             data,
-        //             children
-        //         }
-        //     }
-
-        //     let first_child = std::ptr::addr_of_mut!(*children.get_mut(0).unwrap());
-
-        //     for i in 0..N {
-        //         std::ptr::write(first_child.add(i), None)
-        //     }
-
-        //     Self {
-        //         data,
-        //         children,
-        //     }
-        // }
     }
 
     fn new_node(&mut self, i: usize, data: T)
     {
         self.children[i] = Some(Box::new(NtreeNode::new(data)));
     }
-
-    pub fn fmt_indent(&self, index: usize, indentation: u32, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str("\n")?;
-        for _ in 0..indentation { f.write_str(" |")?; };
-        f.write_fmt(format_args!(" {} NtreeNode ( {:?} )", index, self.data))?;
-        for i in 0..8 {
-            let child_opt = &self.children[i];
-            match child_opt {
-                Some(child) => child.fmt_indent(i, indentation + 1, f)?,
-                None => ()
-            }
-        }
-        Ok(())
-    }
 }
 
-impl<const N: usize, T: Sized + Debug> Debug for NtreeNode<N, T>
-{
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.fmt_indent(0, 0, f)
-    }
-}
+////////////////////////// Trait impl //////////////////////////
 
-impl<const N: usize, T: Sized + Debug> NtreeNodeInterface<T> for NtreeNode<N, T>
+impl<const N: usize, T: Sized> NtreeNodeInterface<T> for NtreeNode<N, T>
 {
     fn get_data(&self) -> &T {
         &self.data
@@ -121,5 +81,56 @@ impl<const N: usize, T: Sized + Debug> NtreeNodeInterface<T> for NtreeNode<N, T>
             self.new_node(i, default_data);
         }
         self.peek(i).unwrap()
+    }
+}
+
+//////////////////////////// Debug /////////////////////////////
+
+impl<const N: usize, T: Sized + Debug> NtreeNode<N, T>
+{
+    pub fn dbg_indent(&self, index: usize, indentation: u32, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("\n")?;
+        for _ in 0..indentation { f.write_str(" |")?; };
+        f.write_fmt(format_args!(" {} NtreeNode ( {:?} )", index, self.data))?;
+        for i in 0..8 {
+            let child_opt = &self.children[i];
+            match child_opt {
+                Some(child) => child.dbg_indent(i, indentation + 1, f)?,
+                None => ()
+            }
+        }
+        Ok(())
+    }
+}
+
+impl<const N: usize, T: Sized + Debug> Debug for NtreeNode<N, T>
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.dbg_indent(0, 0, f)
+    }
+}
+
+/////////////////////////// Display ////////////////////////////
+
+impl<const N: usize, T: Sized> NtreeNode<N, T> {
+    pub fn fmt_indent(&self, index: usize, indentation: u32, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("\n")?;
+        for _ in 0..indentation { f.write_str(" |")?; };
+        f.write_fmt(format_args!(" {} NtreeNode", index))?;
+        for i in 0..8 {
+            let child_opt = &self.children[i];
+            match child_opt {
+                Some(child) => child.fmt_indent(i, indentation + 1, f)?,
+                None => ()
+            }
+        }
+        Ok(())
+    }
+}
+
+
+impl<const N: usize, T: Sized> Display for NtreeNode<N, T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.fmt_indent(0, 0, f)
     }
 }

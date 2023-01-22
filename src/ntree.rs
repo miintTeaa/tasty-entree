@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use std::fmt::Debug;
+use std::fmt::{Debug, Display};
 
 use crate::ntree_node::*;
 
@@ -88,17 +88,60 @@ mod test
         };
 
         assert_eq!(ntree, correct_ntree);
+    }
 
+    #[test]
+    fn display_ntree()
+    {
+        #[derive(Clone, Copy, PartialEq, Eq)]
+        struct NtreeDataNoDebug {
+            pub tile_type: i32,
+            pub depth: i32,
+        }
+
+        let def_data = NtreeDataNoDebug {
+            tile_type: 0,
+            depth: 0
+        };
+
+        let mut ntree = Ntree::<8, _>::new(def_data);
+
+        ntree.interface()
+            .insert(4, def_data);
+        ntree.interface()
+            .insert_mut(6, def_data)
+            .insert(3, def_data);
+        
+        println!("{:}", ntree);
+    }
+    
+    #[test]
+    fn debug_ntree()
+    {
+        let def_data = NtreeData {
+            tile_type: 0,
+            depth: 0
+        };
+
+        let mut ntree = Ntree::<8, _>::new(def_data);
+
+        ntree.interface()
+            .insert(4, def_data);
+        ntree.interface()
+            .insert_mut(6, def_data)
+            .insert(3, def_data);
+        
+        println!("{:?}", ntree);
     }
 }
 
 /// Safe interface for NtreeNodes
 #[derive(PartialEq, Eq)]
-pub struct Ntree<const N: usize, T: Sized + Debug> {
+pub struct Ntree<const N: usize, T: Sized> {
     root: NtreeNode<N, T>,
 }
 
-impl<const N: usize, T: Sized + Debug> Ntree<N, T> {
+impl<const N: usize, T: Sized> Ntree<N, T> {
     pub fn new(default_data: T) -> Self {
         let root;
 
@@ -116,6 +159,12 @@ impl<const N: usize, T: Sized + Debug> Ntree<N, T> {
 impl<const N: usize, T: Sized + Debug> Debug for Ntree<N, T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str("[Ntree]")?;
-        self.root.fmt_indent(0, 0, f)
+        Debug::fmt(&self.root, f)
+    }
+}
+impl<const N: usize, T: Sized> Display for Ntree<N, T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("[Ntree]")?;
+        Display::fmt(&self.root, f)
     }
 }
