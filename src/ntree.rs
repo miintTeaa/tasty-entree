@@ -92,6 +92,41 @@ mod test {
         assert_eq!(ntree, correct_ntree);
     }
 
+    #[test]
+    fn send_test() {
+        use std::thread;
+
+        let mut tree = Ntree::<4, i32>::new(3);
+
+        let thread = thread::spawn(move || {
+            tree.interface_mut().insert(0, 5);
+        });
+
+        thread.join().unwrap();
+    }
+
+    #[test]
+    fn sync_test() {
+        use std::sync::Arc;
+        use std::thread;
+
+        let tree = Arc::from(Ntree::<3, _>::new(5));
+
+        let tree_ref = tree.clone();
+        let tree_ref2 = tree.clone();
+
+        let thread = thread::spawn(move || {
+            tree_ref.interface();
+        });
+
+        let thread2 = thread::spawn(move || {
+            tree_ref2.interface();
+        });
+
+        thread.join().unwrap();
+        thread2.join().unwrap();
+    }
+
     /// Run with cargo test -- --nocapture
     #[cfg(feature = "display")]
     #[test]
