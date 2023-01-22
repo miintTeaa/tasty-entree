@@ -2,6 +2,10 @@
 name = "tasty-ntree"
 version = "0.1.0"
 edition = "2021"
+description = "Generic rust n-trees implemented with generics and no dependencies (and that's a guarantree)."
+repository = "https://github.com/miintTeaa/tasty-ntree/"
+license = "MIT"
+readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
