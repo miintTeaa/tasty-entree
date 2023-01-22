@@ -91,7 +91,7 @@ impl<const N: usize, T: Sized + Debug> NtreeNode<N, T> {
             f.write_str(" |")?;
         }
         f.write_fmt(format_args!(" {} NtreeNode ( {:?} )", index, self.data))?;
-        for i in 0..8 {
+        for i in 0..N {
             match &self.children[i] {
                 Some(child) => child.dbg_indent(i, indentation + 1, f)?,
                 None => (),
@@ -123,7 +123,7 @@ impl<const N: usize, T: Sized> NtreeNode<N, T> {
             f.write_str(" |")?;
         }
         f.write_fmt(format_args!(" {} NtreeNode", index))?;
-        for i in 0..8 {
+        for i in 0..N {
             match &self.children[i] {
                 Some(child) => child.fmt_indent(i, indentation + 1, f)?,
                 None => (),
