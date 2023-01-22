@@ -185,7 +185,7 @@ mod test {
 /// and you can interact with it using [Self::interface()] and [Self::interface_mut()].
 ///
 /// ```
-/// use tasty_entree::Ntree;
+/// use tasty_ntree::Ntree;
 ///
 /// // Making an octree where each node holds an i32.
 /// let i32_octree = Ntree::<8, i32>::new(5);

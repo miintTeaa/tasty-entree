@@ -11,7 +11,7 @@ type NodeChildren<const N: usize, T> = [Option<Box<NtreeNode<N, T>>>; N];
 ///
 /// Usage example:
 /// ```
-/// use tasty_entree::Ntree;
+/// use tasty_ntree::Ntree;
 ///
 /// // Making a quadtree where each node holds a String.
 /// let mut i32_octree = Ntree::<4, String>::new("Root node".to_string());
