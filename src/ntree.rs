@@ -46,9 +46,9 @@ mod test {
 
         let mut ntree = Ntree::<8, _>::new(def_data);
 
-        ntree.interface().insert(4, def_data);
+        ntree.interface_mut().insert(4, def_data);
         ntree
-            .interface()
+            .interface_mut()
             .insert_mut(6, def_data)
             .insert(3, def_data);
 
@@ -109,9 +109,9 @@ mod test {
 
         let mut ntree = Ntree::<8, _>::new(def_data);
 
-        ntree.interface().insert(4, def_data);
+        ntree.interface_mut().insert(4, def_data);
         ntree
-            .interface()
+            .interface_mut()
             .insert_mut(6, def_data)
             .insert(3, def_data);
 
@@ -131,9 +131,9 @@ mod test {
 
         let mut ntree = Ntree::<8, _>::new(def_data);
 
-        ntree.interface().insert(4, def_data);
+        ntree.interface_mut().insert(4, def_data);
         ntree
-            .interface()
+            .interface_mut()
             .insert_mut(6, def_data)
             .insert(3, def_data);
 
@@ -158,7 +158,11 @@ impl<const N: usize, T: Sized> Ntree<N, T> {
         Self { root }
     }
 
-    pub fn interface(&mut self) -> &mut dyn NtreeNodeInterface<T> {
+    pub fn interface(&self) -> &dyn NtreeNodeInterface<T> {
+        &self.root
+    }
+
+    pub fn interface_mut(&mut self) -> &mut dyn NtreeNodeInterface<T> {
         &mut self.root
     }
 }
