@@ -90,6 +90,7 @@ mod test
         assert_eq!(ntree, correct_ntree);
     }
 
+    /// Run with cargo test -- --nocapture
     #[test]
     fn display_ntree()
     {
@@ -115,6 +116,8 @@ mod test
         println!("{:}", ntree);
     }
     
+
+    /// Run with cargo test -- --nocapture
     #[test]
     fn debug_ntree()
     {
