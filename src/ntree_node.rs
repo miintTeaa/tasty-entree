@@ -36,7 +36,7 @@ type NodeChildren<const N: usize, T> = [Option<Box<NtreeNode<N, T>>>; N];
 /// #[cfg(feature = "debug")]
 /// println!("Tree:\n{:?}", i32_octree);
 ///
-/// // With the debug features enabled, this would print:
+/// // With the debug feature enabled, this would print:
 /// // [NTree]
 /// // 0 NtreeNode ( "Root node" )
 /// // | 0 NTreeNode ( "This is node 0" )
